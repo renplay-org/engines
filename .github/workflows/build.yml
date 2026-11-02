@@ -1,0 +1,74 @@
+name: Engine packs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: engines
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.plan.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          todo=()
+          for v in $(grep -vE '^\s*(#|$)' versions.txt); do
+            if [ "${{ github.event_name }}" = "pull_request" ] || ! gh release view "renpy-$v" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              todo+=("\"$v\"")
+            fi
+          done
+          echo "versions=[$(IFS=,; echo "${todo[*]}")]" >> "$GITHUB_OUTPUT"
+          echo "to build: ${todo[*]:-none}"
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.versions != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJson(needs.plan.outputs.versions) }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq bzip2 unzip >/dev/null
+      - run: scripts/build-pack.sh "${{ matrix.version }}" "pack"
+      - if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "renpy-${{ matrix.version }}" pack/* \
+            --title "Ren'Py ${{ matrix.version }} web engine" \
+            --notes "Engine pack built from the official Ren'Py ${{ matrix.version }} SDK and web support (sha256-verified against renpy.org/dl/${{ matrix.version }}/checksums.txt)."
+
+  index:
+    needs: [plan, build]
+    if: always() && github.event_name != 'pull_request' && needs.build.result != 'failure'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/index.py site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

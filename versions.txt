@@ -1,0 +1,4 @@
+# Ren'Py versions to publish engine packs for. One per line; CI builds the
+# ones that do not have a release yet. Only 8.x: Ren'Py 7.x web support
+# (renpyweb) is a different engine and loader that renplay does not drive yet.
+8.5.3
