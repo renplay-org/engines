@@ -33,8 +33,9 @@ and the game's PC download, so it never runs the Ren'Py SDK.
 
 ## Rules
 
-- Only Ren'Py 8.x. Ren'Py 7's web support (renpyweb) is a different engine and loader that Renplay
-  does not drive; do not add 7.x versions.
+- Only Ren'Py 8.x. Games made with Ren'Py 7 run on the newest 8.x engine (Renplay picks it for
+  them), so 7.x packs are not needed; Ren'Py 7's own web support (renpyweb) is a different engine
+  and loader that Renplay does not drive.
 - A released pack never changes. To fix one, publish a new Ren'Py version (or ask the maintainer).
 - Adding a version: add it to `versions.txt` in a pull request; CI must build it. After merging,
   check the release and `index.json`, then try a game on that engine in Renplay

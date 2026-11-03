@@ -1,4 +1,4 @@
 # Ren'Py versions to publish engine packs for. One per line; CI builds the
-# ones that do not have a release yet. Only 8.x: Ren'Py 7.x web support
-# (renpyweb) is a different engine and loader that renplay does not drive yet.
+# ones that do not have a release yet. Only 8.x: games made with Ren'Py 7 run
+# on the 8.x engine, so no 7.x packs are needed.
 8.5.3
