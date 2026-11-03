@@ -14,9 +14,9 @@ Packs are built in CI from the official SDK and web support on renpy.org, verifi
 renpy.org's published sha256 sums. Nothing in them is modified. Ren'Py is MIT-licensed; see
 `LICENSE.txt` in each pack.
 
-Only Ren'Py 8 is packaged. Ren'Py 7's web support is a different engine with its own loader
-(`index.wasm`, separate Python data packages), which Renplay does not drive yet. The 8.x engine
-runs games made with earlier 8.x releases.
+Only Ren'Py 8 is packaged. The 8.x engine runs games made with earlier 8.x releases and most games
+made with Ren'Py 7, which Renplay builds with it. Ren'Py 7's own web support (`index.wasm`,
+separate Python data packages) is a different engine that Renplay does not need.
 
 ## Adding a version
 
