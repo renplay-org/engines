@@ -3,7 +3,7 @@
 This repository packages the official Ren'Py web engine, one pack per Ren'Py version, for
 [Renplay](https://github.com/renplay-org/renplay) (a self-hosted web app that plays Ren'Py games
 in the browser). Packs are GitHub releases named `renpy-<version>`; the index is published at
-`https://engines.renplay.org/index.json` (also at `https://renplay-org.github.io/engines/index.json`). Renplay downloads a pack the first time a game
+`https://engines.renplay.org/index.json`. Renplay downloads a pack the first time a game
 needs that version and checks every file against the index.
 
 ## What a pack is
@@ -29,7 +29,7 @@ and the game's PC download, so it never runs the Ren'Py SDK.
 - `scripts/build-pack.sh`: builds one pack (Linux; needs curl, bzip2, unzip, python3).
 - `scripts/index.py`: writes `index.json` from the releases.
 - `.github/workflows/build.yml`: builds packs on pull requests; on `main` it releases new versions
-  and publishes the index to GitHub Pages.
+  and publishes the index to engines.renplay.org (Cloudflare).
 
 ## Rules
 
