@@ -1,0 +1,10 @@
+// Publishes the engine index (written to site/ by scripts/index.py) at
+// https://engines.renplay.org. The packs stay GitHub release assets; the index lists their URLs.
+{
+  "name": "renplay-engines",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./site", "not_found_handling": "404-page" },
+  "routes": [{ "pattern": "engines.renplay.org", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false
+}
