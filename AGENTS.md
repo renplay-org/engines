@@ -1,9 +1,9 @@
 # Renplay engines: notes for agents
 
 This repository packages the official Ren'Py web engine, one pack per Ren'Py version, for
-[Renplay](https://github.com/renplay-web/renplay) (a self-hosted web app that plays Ren'Py games
+[Renplay](https://github.com/renplay-org/renplay) (a self-hosted web app that plays Ren'Py games
 in the browser). Packs are GitHub releases named `renpy-<version>`; the index is published at
-`https://renplay-web.github.io/engines/index.json`. Renplay downloads a pack the first time a game
+`https://engines.renplay.org/index.json` (also at `https://renplay-org.github.io/engines/index.json`). Renplay downloads a pack the first time a game
 needs that version and checks every file against the index.
 
 ## What a pack is
