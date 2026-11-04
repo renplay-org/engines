@@ -19,8 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-The license covers this repository's scripts and documentation. The engine
-packs published as releases are Ren'Py's own files, unmodified, under Ren'Py's
-license (https://www.renpy.org/doc/html/license.html); each pack includes it
-as LICENSE.txt.
