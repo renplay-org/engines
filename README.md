@@ -16,7 +16,8 @@ renpy.org's published sha256 sums. Nothing in them is modified. Ren'Py is MIT-li
 
 Only Ren'Py 8 is packaged. The 8.x engine runs games made with earlier 8.x releases and most games
 made with Ren'Py 7, which Renplay builds with it. Ren'Py 7's own web support (`index.wasm`,
-separate Python data packages) is a different engine that Renplay does not need.
+separate Python data packages) is a different engine that Renplay does not need. HTML games need no
+engine pack: they are web pages already.
 
 ## Adding a version
 
