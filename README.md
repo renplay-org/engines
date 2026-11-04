@@ -2,7 +2,7 @@
 
 Ren'Py web engines packaged for [Renplay](https://github.com/renplay-org/renplay). One pack per
 Ren'Py version, published as a GitHub release (`renpy-<version>`) and listed in
-`https://engines.renplay.org/index.json` (also at `https://renplay-org.github.io/engines/index.json`).
+`https://engines.renplay.org/index.json`.
 
 A pack holds what every Ren'Py web game built with that version shares: the WebAssembly engine,
 its loader, the page template and the Ren'Py Python package that sits next to the game files in
