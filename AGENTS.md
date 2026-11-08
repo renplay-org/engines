@@ -2,9 +2,10 @@
 
 This repository packages the official Ren'Py web engine, one pack per Ren'Py version, for
 [Renplay](https://github.com/renplay-org/renplay) (a self-hosted web app that plays Ren'Py games
-in the browser). Packs are GitHub releases named `renpy-<version>`; the index is published at
-`https://engines.renplay.org/index.json`. Renplay downloads a pack the first time a game
-needs that version and checks every file against the index.
+in the browser). Packs are GitHub releases named `renpy-<version>`, and their files are published at
+`https://engines.renplay.org/<version>/` with the index at `https://engines.renplay.org/index.json`.
+Renplay downloads a pack from there the first time a game needs that version and checks every file
+against the index. The releases are the archive the site is made from.
 
 ## What a pack is
 
@@ -27,9 +28,12 @@ and the game's PC download, so it never runs the Ren'Py SDK.
 
 - `versions.txt`: versions to publish, one per line. CI builds those without a release.
 - `scripts/build-pack.sh`: builds one pack (Linux; needs curl, bzip2, unzip, python3).
-- `scripts/index.py`: writes `index.json` from the releases.
-- `.github/workflows/build.yml`: builds packs on pull requests; on `main` it releases new versions
-  and publishes the index to engines.renplay.org (Cloudflare).
+- `scripts/site.py`: writes the site: each release's files, checked against its `manifest.json`,
+  in `site/<version>/`, and `index.json` listing them there.
+- `scripts/verify.mjs`: downloads every file an index names, as Renplay does, and checks it.
+- `.github/workflows/build.yml`: builds packs on pull requests. On `main` it releases new versions,
+  publishes their files to engines.renplay.org (Cloudflare), checks they download whole, and only
+  then publishes the index that names them.
 
 ## Rules
 
