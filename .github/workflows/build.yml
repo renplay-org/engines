@@ -1,71 +1,124 @@
 name: Engine packs
 
+# Pull requests build every pack in versions.txt, to check them. On main, versions without a release
+# are built and released, and the site at engines.renplay.org is published: every pack's files and
+# the index that lists them (scripts/site.py).
+
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: {}
 
 concurrency:
-  group: engines
-  cancel-in-progress: false
+  group: engines-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  WRANGLER: wrangler@4.158.0
 
 jobs:
+  check:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Scripts
+        run: |
+          bash -n scripts/build-pack.sh
+          python3 -m py_compile scripts/site.py
+          node --check scripts/verify.mjs
+      - name: Workflows
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
+          pipx run zizmor==1.32.0 --persona regular --min-severity medium .github/workflows
+
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
       versions: ${{ steps.plan.outputs.versions }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: plan
         env:
           GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
         run: |
           todo=()
-          for v in $(grep -vE '^\s*(#|$)' versions.txt); do
-            if [ "${{ github.event_name }}" = "pull_request" ] || ! gh release view "renpy-$v" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+          while read -r v; do
+            if [ "$EVENT" = pull_request ] || ! gh release view "renpy-$v" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
               todo+=("\"$v\"")
             fi
-          done
+          done < <(grep -vE '^\s*(#|$)' versions.txt)
           echo "versions=[$(IFS=,; echo "${todo[*]}")]" >> "$GITHUB_OUTPUT"
           echo "to build: ${todo[*]:-none}"
 
   build:
     needs: plan
     if: needs.plan.outputs.versions != '[]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
         version: ${{ fromJson(needs.plan.outputs.versions) }}
     steps:
-      - uses: actions/checkout@v4
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq bzip2 unzip >/dev/null
-      - run: scripts/build-pack.sh "${{ matrix.version }}" "pack"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq bzip2 unzip > /dev/null
+      - run: scripts/build-pack.sh "$VERSION" pack
+        env:
+          VERSION: ${{ matrix.version }}
       - if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ matrix.version }}
         run: |
-          gh release create "renpy-${{ matrix.version }}" pack/* \
-            --title "Ren'Py ${{ matrix.version }} web engine" \
-            --notes "Engine pack built from the official Ren'Py ${{ matrix.version }} SDK and web support (sha256-verified against renpy.org/dl/${{ matrix.version }}/checksums.txt)."
+          gh release create "renpy-$VERSION" pack/* \
+            --title "Ren'Py $VERSION web engine" \
+            --notes "Engine pack built from the official Ren'Py $VERSION SDK and web support (sha256-verified against renpy.org/dl/$VERSION/checksums.txt)."
 
-  index:
-    needs: [plan, build]
-    if: always() && github.event_name != 'pull_request' && needs.build.result != 'failure'
-    runs-on: ubuntu-latest
+  # The files go live first, under the index people already use. The new index follows only once
+  # every file it names downloads whole from engines.renplay.org.
+  publish:
+    needs: [check, plan, build]
+    if: always() && github.event_name != 'pull_request' && needs.check.result == 'success' && needs.plan.result == 'success' && needs.build.result != 'failure'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - env:
-          GH_TOKEN: ${{ github.token }}
-        run: python3 scripts/index.py site
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
-      - run: npx --yes wrangler@4 deploy
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The packs, checked against their releases
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/site.py site
+      - name: The files, with the index people use now
+        run: |
+          mv site/index.json new-index.json
+          curl -fsS https://engines.renplay.org/index.json -o site/index.json || echo '{"schema": 1, "engines": []}' > site/index.json
+          npx --yes "$WRANGLER" deploy
+      - name: Every file arrives whole
+        run: node scripts/verify.mjs new-index.json
+      - name: The new index
+        run: |
+          mv new-index.json site/index.json
+          npx --yes "$WRANGLER" deploy

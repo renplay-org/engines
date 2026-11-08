@@ -1,0 +1,16 @@
+# Weekly, grouped into one pull request. A new version waits a week before it is proposed.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      actions:
+        patterns: ['*']
