@@ -46,8 +46,11 @@ and the game's PC download, so it never runs the Ren'Py SDK.
   and loader that Renplay does not drive.
 - A released pack never changes. To fix one, publish a new Ren'Py version (or ask the maintainer).
 - Adding a pre-release: mark it in `versions.txt`, and pin its sums in `prerelease-sums/` (download
-  the two files, run `sha256sum`). When renpy.org publishes the final release, its files differ from
-  the pre-release's, so ask the maintainer how to publish it.
+  the two files, run `sha256sum`). A published pack never changes, except once for a pre-release:
+  when renpy.org publishes the final release under the same version, delete the pre-release's GitHub
+  release, drop its `prerelease` marker and pinned sums, and CI publishes the final pack, checked
+  against renpy.org's own sums. Games already built on the pre-release keep it: Renplay's builds never
+  change.
 - Adding a version: add it to `versions.txt` in a pull request; CI must build it. After merging,
   check the release and `index.json`, then try a game on that engine in Renplay
   (`RENPLAY_ENGINE=<version>` or a recipe's `engine`).
