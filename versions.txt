@@ -1,4 +1,9 @@
 # Ren'Py versions to publish engine packs for. One per line; CI builds the
 # ones that do not have a release yet. Only 8.x: games made with Ren'Py 7 run
 # on the 8.x engine, so no 7.x packs are needed.
+#
+# A version followed by "prerelease" is a public pre-release: the index marks it, and Renplay
+# uses it only for games made with a newer Ren'Py than any stable engine. renpy.org publishes no
+# checksums.txt for one, so its sums are pinned in prerelease-sums/<version>.txt.
 8.5.3
+8.6.0 prerelease

@@ -3,7 +3,7 @@
     GITHUB_REPOSITORY=renplay-org/engines python3 scripts/site.py site
 
 Each release's files are downloaded through the GitHub API, checked against the release's
-manifest.json, and placed in site/<version>/. index.json lists them there, so Renplay downloads
+manifest.json, and placed in site/<version>/. index.json lists them there (marking pre-releases with "prerelease": true), so Renplay downloads
 its engines from engines.renplay.org: the releases on GitHub stay the archive they come from, and
 a GitHub outage can delay publishing a version but never an install.
 """
@@ -38,11 +38,24 @@ for rel in releases:
     engines.append({"version": manifest["version"], "renpy": manifest["renpy"], "python": manifest["python"], "files": files})
 
 
+def prereleases():
+    """Versions that versions.txt marks as pre-releases, such as "8.6.0 prerelease"."""
+    found = set()
+    for line in open(os.path.join(os.path.dirname(__file__), "..", "versions.txt")):
+        words = line.split("#")[0].split()
+        if len(words) > 1 and words[1] == "prerelease":
+            found.add(words[0])
+    return found
+
+
 def key(e):
     return tuple(int(p) for p in e["version"].split("."))
 
 
 engines.sort(key=key, reverse=True)
+for e in engines:
+    if e["version"] in prereleases():
+        e["prerelease"] = True
 os.makedirs(out, exist_ok=True)
 json.dump({"schema": 1, "engines": engines}, open(os.path.join(out, "index.json"), "w"), indent=1)
 # Cloudflare reads these. A version's files never change, so browsers and Renplay may keep them.

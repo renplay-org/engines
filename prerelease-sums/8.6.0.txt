@@ -1,0 +1,4 @@
+# renpy.org publishes no checksums.txt for the 8.6.0 pre-release, so these sums were taken from
+# the files at https://www.renpy.org/dl/8.6.0/ on 2026-11-09. The build fails if they change.
+d495533b109f4c8ea3c7e2dd982cba636a3b1f4063429d76eae3dbeed50a00fc renpy-8.6.0-sdk.tar.bz2
+5d9517827c9c6eda2537116435e0f80dc761cd4139a25cec0a71e910604dbef4 renpy-8.6.0-web.zip
