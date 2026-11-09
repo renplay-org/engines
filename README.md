@@ -26,4 +26,8 @@ it is released and indexed. Build locally with `scripts/build-pack.sh <version> 
 (Linux, or `docker run --rm -v "$PWD":/w -w /w debian:bookworm-slim` with `curl bzip2 unzip
 python3` installed).
 
+A public pre-release is marked in `versions.txt` (`8.6.0 prerelease`). Its entry in `index.json` has
+`"prerelease": true`, and Renplay picks it only for games that need it. renpy.org publishes no sums for
+a pre-release, so they are pinned in `prerelease-sums/`.
+
 Working on this repository with an AI agent: see [AGENTS.md](AGENTS.md).

@@ -54,7 +54,7 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           todo=()
-          while read -r v; do
+          while read -r v _; do
             if [ "$EVENT" = pull_request ] || ! gh release view "renpy-$v" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
               todo+=("\"$v\"")
             fi

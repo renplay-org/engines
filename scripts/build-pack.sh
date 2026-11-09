@@ -4,7 +4,8 @@
 #   scripts/build-pack.sh <version> <out-dir>
 #
 # Downloads the official Linux SDK and web support from renpy.org, checks
-# them against renpy.org's published sha256 sums, builds the bundled sample
+# them against renpy.org's published sha256 sums (for a pre-release, which has
+# none, against prerelease-sums/<version>.txt), builds the bundled sample
 # game for the web and keeps only the parts every web game shares:
 #
 #   renpy.wasm.gz renpy.data.gz   engine (renplay serves these precompressed)
@@ -19,13 +20,20 @@ set -euo pipefail
 VERSION="${1:?version}"
 OUT="${2:?out dir}"
 BASE="https://www.renpy.org/dl/${VERSION}"
+HERE="$(cd "$(dirname "$0")" && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 sha_of() { grep -E "^[0-9a-f]{64} $1\$" "$WORK/checksums.txt" | cut -d' ' -f1; }
 
 echo "== Ren'Py ${VERSION}"
-curl -fsSL "${BASE}/checksums.txt" -o "$WORK/checksums.txt"
+# Releases publish checksums.txt. A pre-release does not, so its sums are pinned in this repository.
+if ! curl -fsSL "${BASE}/checksums.txt" -o "$WORK/checksums.txt"; then
+  PINNED="$HERE/../prerelease-sums/${VERSION}.txt"
+  [ -f "$PINNED" ] || { echo "no checksums.txt on renpy.org and no $PINNED" >&2; exit 1; }
+  echo "no checksums.txt on renpy.org, using the pinned sums"
+  cp "$PINNED" "$WORK/checksums.txt"
+fi
 SDK="renpy-${VERSION}-sdk.tar.bz2"
 WEB="renpy-${VERSION}-web.zip"
 for f in "$SDK" "$WEB"; do

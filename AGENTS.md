@@ -26,7 +26,11 @@ and the game's PC download, so it never runs the Ren'Py SDK.
 
 ## Files
 
-- `versions.txt`: versions to publish, one per line. CI builds those without a release.
+- `versions.txt`: versions to publish, one per line. CI builds those without a release. A line
+  `8.6.0 prerelease` marks a public pre-release: `index.json` gets `"prerelease": true` on its entry,
+  and Renplay uses it only for games made with a newer Ren'Py than every stable engine.
+- `prerelease-sums/<version>.txt`: sha256 sums of a pre-release's SDK and web files. renpy.org
+  publishes no `checksums.txt` for a pre-release, so `build-pack.sh` checks against these.
 - `scripts/build-pack.sh`: builds one pack (Linux; needs curl, bzip2, unzip, python3).
 - `scripts/site.py`: writes the site: each release's files, checked against its `manifest.json`,
   in `site/<version>/`, and `index.json` listing them there.
@@ -41,6 +45,9 @@ and the game's PC download, so it never runs the Ren'Py SDK.
   them), so 7.x packs are not needed; Ren'Py 7's own web support (renpyweb) is a different engine
   and loader that Renplay does not drive.
 - A released pack never changes. To fix one, publish a new Ren'Py version (or ask the maintainer).
+- Adding a pre-release: mark it in `versions.txt`, and pin its sums in `prerelease-sums/` (download
+  the two files, run `sha256sum`). When renpy.org publishes the final release, its files differ from
+  the pre-release's, so ask the maintainer how to publish it.
 - Adding a version: add it to `versions.txt` in a pull request; CI must build it. After merging,
   check the release and `index.json`, then try a game on that engine in Renplay
   (`RENPLAY_ENGINE=<version>` or a recipe's `engine`).
