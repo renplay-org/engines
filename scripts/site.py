@@ -3,7 +3,7 @@
     GITHUB_REPOSITORY=renplay-org/engines python3 scripts/site.py site
 
 Each release's files are downloaded through the GitHub API, checked against the release's
-manifest.json, and placed in site/<version>/. index.json lists them there (marking pre-releases with "prerelease": true), so Renplay downloads
+manifest.json, and placed in site/<version>/. index.json lists them there (pre-releases apart, under "prereleases"), so Renplay downloads
 its engines from engines.renplay.org: the releases on GitHub stay the archive they come from, and
 a GitHub outage can delay publishing a version but never an install.
 """
@@ -53,11 +53,13 @@ def key(e):
 
 
 engines.sort(key=key, reverse=True)
-for e in engines:
-    if e["version"] in prereleases():
-        e["prerelease"] = True
+# Pre-releases are listed apart: Renplay 4.6.3 and older read only "engines" and build a game without a
+# recipe on the newest engine there, which must never be a pre-release. Newer Renplay reads both lists.
+pre = prereleases()
+stable = [e for e in engines if e["version"] not in pre]
+early = [dict(e, prerelease=True) for e in engines if e["version"] in pre]
 os.makedirs(out, exist_ok=True)
-json.dump({"schema": 1, "engines": engines}, open(os.path.join(out, "index.json"), "w"), indent=1)
+json.dump({"schema": 1, "engines": stable, "prereleases": early}, open(os.path.join(out, "index.json"), "w"), indent=1)
 # Cloudflare reads these. A version's files never change, so browsers and Renplay may keep them.
 headers = "/*\n  Access-Control-Allow-Origin: *\n  X-Content-Type-Options: nosniff\n/index.json\n  Cache-Control: public, max-age=300\n"
 for e in engines:
