@@ -27,7 +27,7 @@ and the game's PC download, so it never runs the Ren'Py SDK.
 ## Files
 
 - `versions.txt`: versions to publish, one per line. CI builds those without a release. A line
-  `8.6.0 prerelease` marks a public pre-release: `index.json` gets `"prerelease": true` on its entry,
+  `8.6.0 prerelease` marks a public pre-release: `index.json` lists it under `"prereleases"`, apart from `"engines"`, which Renplay 4.6.3 and older read alone,
   and Renplay uses it only for games made with a newer Ren'Py than every stable engine.
 - `prerelease-sums/<version>.txt`: sha256 sums of a pre-release's SDK and web files. renpy.org
   publishes no `checksums.txt` for a pre-release, so `build-pack.sh` checks against these.
