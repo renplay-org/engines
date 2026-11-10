@@ -1,6 +1,6 @@
 name: Engine packs
 
-# Pull requests build every pack in versions.txt, to check them. On main, versions without a release
+# Pull requests build every pack in versions.txt to check them, except pre-releases already published. On main, versions without a release
 # are built and released, and the site at engines.renplay.org is published: every pack's files and
 # the index that lists them (scripts/site.py).
 
@@ -54,8 +54,14 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           todo=()
-          while read -r v _; do
-            if [ "$EVENT" = pull_request ] || ! gh release view "renpy-$v" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+          while read -r v kind; do
+            released=false
+            gh release view "renpy-$v" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1 && released=true
+            # A pull request builds every pack to check it, except a pre-release already published: renpy.org
+            # may republish a pre-release's files under the same version, and its published pack stays as built.
+            if [ "$EVENT" = pull_request ] && ! { [ "$kind" = prerelease ] && $released; }; then
+              todo+=("\"$v\"")
+            elif [ "$EVENT" != pull_request ] && ! $released; then
               todo+=("\"$v\"")
             fi
           done < <(grep -vE '^\s*(#|$)' versions.txt)
