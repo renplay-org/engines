@@ -66,9 +66,9 @@ for e in engines:
     headers += f"/{e['version']}/*\n  Cache-Control: public, max-age=31536000, immutable\n"
 open(os.path.join(out, "_headers"), "w").write(headers)
 # Files are served at exactly their paths (wrangler.jsonc), so the address itself is rewritten to a small
-# page that says what this host is. Search engines are kept away (robots.txt, X-Robots-Tag).
+# page that says what this host is. Crawlers are allowed in so they read the X-Robots-Tag: noindex header.
 open(os.path.join(out, "_redirects"), "w").write("/ /index.html 200\n")
-open(os.path.join(out, "robots.txt"), "w").write("User-agent: *\nDisallow: /\n")
+open(os.path.join(out, "robots.txt"), "w").write("User-agent: *\nAllow: /\n")
 items = "".join(f'<li>Ren\u2019Py {e["version"]}{" (pre-release)" if e["version"] in pre else ""}</li>' for e in engines)
 open(os.path.join(out, "index.html"), "w").write(f"""<!doctype html>
 <html lang="en">
